@@ -24,14 +24,13 @@
 
 	var canvas;
 	var gl;
-
+	var context;
 	var points = [];
-
 	var NumTimesToSubdivide = 5;
 
 	window.onload = function init()
 	{
-	    canvas = document.getElementById("c");   
+	    canvas = document.getElementById("c");  
 	    gl = WebGLUtils.setupWebGL(canvas);
     
 	    var vertices = [
@@ -67,24 +66,32 @@
 
 	    /*EXTRA CREDIT #2: 	Implement a method where the keyboard is used (up arrow, in this case)
 	    					to change that color variable and redisplay.*/
-	    					
+
 	    window.onkeypress = function(e){
-		var key = e.keyCode ? e.keyCode : e.which;
+			var key = e.keyCode ? e.keyCode : e.which;
 
-		if (key == 38) {
-			var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
-			var colorLoc = gl.getUniformLocation(program, "uniformColor");
-			if (colorLoc != 1)
-				gl.uniform4fv(colorLoc, color);
+			if (key == 38) {
 
-			render();
+								var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
+				var colorLoc = gl.getUniformLocation(program, "uniformColor");
+				if (colorLoc != 1)
+					gl.uniform4fv(colorLoc, color);
+
+				render();
+			}
+
+			if (key == 40) {
+				gl.clear( gl.COLOR_BUFFER_BIT );
+				drawKochSnowflake();
+
 			}
 		}
+
 
 	    render();
 	};
 
-		function triangle( a, b, c )
+	function triangle( a, b, c )
 	{
 	    points.push( a, b, c );
 	}
@@ -117,10 +124,93 @@
 
 	function render()
 	{
-	    gl.clear( gl.COLOR_BUFFER_BIT );
+		gl.clear( gl.COLOR_BUFFER_BIT );
 	    gl.drawArrays( gl.TRIANGLES, 0, points.length );
 	}
 
+	W = 550; 
+	H = 510;
+
+	function drawKochSnowflake(){
+	   
+	    var main_canvas = document.getElementById("c");
+	    var mcontext = main_canvas.getContext('2d');
+	    var container = main_canvas.parentNode;
+	    var canvas = document.createElement('canvas');
+	    canvas.id="imageTemp";
+	    canvas.width=W;
+	    canvas.height=H;
+	    container.appendChild(canvas);;
+	    context = canvas.getContext("2d"); 
+	    
+	    context.beginPath();
+	    context.stroke();
+	    context.closePath();
+	    
+	    fractal([50,150], [500,150], 5);
+	    fractal([270,490], [50,150],5);
+	    fractal([500,150],[270,490],5);
+
+	};
+
+	function fractal(A, B, depth){
+
+	    if (depth < 0){
+	        return null;
+	    }
+
+	    var C = divide(add(multiply(A, 2), B), 3);
+	    var D = divide(add(multiply(B, 2), A), 3);
+	    var F = divide(add(A, B), 2);
+	    
+	    var V1 = divide(minus(F, A), length(F, A));
+	    var V2 = [V1[1], -V1[0]];
+
+	    var E = add(multiply(V2, Math.sqrt(3)/6 * length(B, A)), F);
+
+	    DrawLine(A, B, "black");
+
+	    if (depth !=0){
+	        for (var i=0;i<10;i++)
+	            DrawLine(C, D, "white");
+	    };
+	    
+	    fractal(A, C, depth-1);
+	    fractal(C, E, depth-1);
+	    fractal(E, D, depth-1);
+	    fractal(D, B, depth-1);
+
+	};
+
+	function multiply(v, num){
+	    return [v[0]*num, v[1]*num];
+	};
+
+	function divide(v, num){
+	    return [v[0]/num, v[1]/num];
+	};
+	 
+	function add(a, b){
+	    return [a[0]+b[0], a[1]+b[1]];
+	};
+
+	function minus(a, b){
+	    return [a[0]-b[0], a[1]-b[1]];
+	};
+
+	function length(a, b){
+	    return Math.sqrt(Math.pow(a[0] - b[0],2) + 
+	                     Math.pow(a[1] - b[1],2));
+	};
+
+	function DrawLine(a, b, c){
+	    context.beginPath();
+	    context.strokeStyle = c;
+	    context.moveTo(a[0], a[1]);
+	    context.lineTo(b[0], b[1]);
+	    context.stroke();
+	    context.closePath();
+	};
 	</script>
 
 	<body>
