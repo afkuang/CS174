@@ -49,7 +49,9 @@
 	    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
 	    gl.useProgram( program );  
 
-	    //EXTRA CREDIT: Implement an application based color variable that can be passed through to the fragment shader.
+	    /*EXTRA CREDIT #1: 	Implement an application based color variable that can be passed through 
+	    					to the fragment shader.*/
+
 	    var colorLoc = gl.getUniformLocation(program, "uniformColor");
 	    var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
 	    if (colorLoc != 1)
@@ -62,10 +64,27 @@
 	    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
 	    gl.enableVertexAttribArray( vPosition );
 
+
+	    /*EXTRA CREDIT #2: 	Implement a method where the keyboard is used (up arrow, in this case)
+	    					to change that color variable and redisplay.*/
+	    					
+	    window.onkeypress = function(e){
+		var key = e.keyCode ? e.keyCode : e.which;
+
+		if (key == 38) {
+			var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
+			var colorLoc = gl.getUniformLocation(program, "uniformColor");
+			if (colorLoc != 1)
+				gl.uniform4fv(colorLoc, color);
+
+			render();
+			}
+		}
+
 	    render();
 	};
 
-	function triangle( a, b, c )
+		function triangle( a, b, c )
 	{
 	    points.push( a, b, c );
 	}
