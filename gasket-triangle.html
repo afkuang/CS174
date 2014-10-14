@@ -3,7 +3,6 @@
 	<script type="text/javascript" src="../Common/webgl-utils.js"></script>
 	<script type="text/javascript" src="../Common/InitShaders.js"></script>
 	<script type="text/javascript" src="../Common/MV.js"></script>
-	<canvas id='c' width='512' height='512'></canvas>
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		attribute vec4 vPosition;
 
@@ -14,14 +13,16 @@
 
 	<script id="fragment-shader" type="x-shader/x-fragment">
 		precision mediump float;
-		uniform vec4 uniformColor;
 
 		void main() {
-			gl_FragColor = uniformColor;
+			gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 		}
 	</script>
 
 	<script>
+
+	var canvas;
+	var gl;
 
 	var points = [];
 
@@ -29,9 +30,9 @@
 
 	window.onload = function init()
 	{
-	    var canvas = document.getElementById("c");   
-	    var gl = WebGLUtils.setupWebGL(canvas);
-
+	    canvas = document.getElementById("c");   
+	    gl = WebGLUtils.setupWebGL(canvas);
+    
 	    var vertices = [
 	        vec2( -1, -1 ),
 	        vec2(  0,  1 ),
@@ -44,15 +45,8 @@
 	    gl.viewport( 0, 0, canvas.width, canvas.height );
     	gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
- 
 	    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-	    gl.useProgram(program);  
-
-	    var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
-	    var colorLoc = gl.getUniformLocation(program, "uniformColor");
-	    if (colorLoc != -1)
-    		gl.uniform4fv(colorLoc, color);
-
+	    gl.useProgram( program );  
 	    var bufferId = gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
 	    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
@@ -101,4 +95,8 @@
 	}
 
 	</script>
+
+	<body>
+		<canvas id='c' width='512' height='512'></canvas>
+	</body>
 </html>
