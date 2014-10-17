@@ -1,4 +1,4 @@
-var lastPressedDown;
+	var lastPressedDown;
 	var canvas;
 	var gl;
 	var context;
