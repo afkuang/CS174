@@ -6,9 +6,10 @@
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		attribute vec4 vPosition;
 
+		uniform mat4 rotationMatrix;
 
 		void main() {
-			gl_Position = vPosition;
+			gl_Position = rotationMatrix * vPosition;
 		}
 	</script>
 
@@ -55,6 +56,10 @@
 	    var colorLoc = gl.getUniformLocation(program, "uniformColor");
 	    var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
 	    gl.uniform4fv(colorLoc, color);
+
+	    var matrixLoc = gl.getUniformLocation(program, "rotationMatrix");
+	    var matrix = rotate(0, 1, 0, 0);
+	    gl.uniformMatrix4fv(matrixLoc, false, flatten(matrix));
 
 	    var bufferId = gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
