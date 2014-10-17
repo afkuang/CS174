@@ -6,6 +6,7 @@
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		attribute vec4 vPosition;
 
+
 		void main() {
 			gl_Position = vPosition;
 		}
@@ -21,7 +22,7 @@
 	</script>
 
 	<script>
-
+	var lastPressedDown;
 	var canvas;
 	var gl;
 	var context;
@@ -32,15 +33,15 @@
 	{
 	    canvas = document.getElementById("c");  
 	    gl = WebGLUtils.setupWebGL(canvas);
+	    context = canvas.getContext("2d");
     
 	    var vertices = [
-	        vec2( -1, -1 ),
-	        vec2(  0,  1 ),
-	        vec2(  1, -1 )
+	        vec2( -0.5, -0.5 ),
+	        vec2(  0,  0.5 ),
+	        vec2(  0.5, -0.5 )
 	    ];
 
-	    divideTriangle( vertices[0], vertices[1], vertices[2],
-	                    NumTimesToSubdivide);
+	    divideTriangle( vertices[0], vertices[1], vertices[2], NumTimesToSubdivide);
 
 	    gl.viewport( 0, 0, canvas.width, canvas.height );
     	gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -53,8 +54,7 @@
 
 	    var colorLoc = gl.getUniformLocation(program, "uniformColor");
 	    var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
-	    if (colorLoc != 1)
-	    	gl.uniform4fv(colorLoc, color);
+	    gl.uniform4fv(colorLoc, color);
 
 	    var bufferId = gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
@@ -63,30 +63,80 @@
 	    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
 	    gl.enableVertexAttribArray( vPosition );
 
-
-	    /*EXTRA CREDIT #2: 	Implement a method where the keyboard is used (up arrow, in this case)
-	    					to change that color variable and redisplay.*/
+	 	/* EXTRA CREDIT 2 ~ 4 */
 
 	    window.onkeypress = function(e){
 			var key = e.keyCode ? e.keyCode : e.which;
 
+		   /*EXTRA CREDIT #2: 	Implement a method where the keyboard is used (up arrow, in this case)
+    					to change that color variable and redisplay.*/
+
 			if (key == 38) {
+				if (!lastPressedDown) {
+					var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
+					var colorLoc = gl.getUniformLocation(program, "uniformColor");
+					if (colorLoc != -1)
+						gl.uniform4fv(colorLoc, color);
 
-								var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
-				var colorLoc = gl.getUniformLocation(program, "uniformColor");
-				if (colorLoc != 1)
-					gl.uniform4fv(colorLoc, color);
+					render();
 
-				render();
+					// When displaying the Sierpinski Gasket, remove the Koch snowflake
+
+					var m_canvas = document.getElementById("c");
+					var m_container = m_canvas.parentNode;
+					if (m_container.firstChild) {
+						var toDelete = document.getElementById("imageTemp");
+						m_container.removeChild(imageTemp);
+					}
+
+					lastPressedDown = false;
+				}
+
+				else {}
+					//do nothing
 			}
+
+			/* EXTRA CREDIT #3: Implement another function in your window similar to the Sierpinski Gasket, 
+								another fractal perhaps? Provide a keyboard input option to switch between the 
+								two on screen, please explain in your notes what function you implemented */
 
 			if (key == 40) {
-				gl.clear( gl.COLOR_BUFFER_BIT );
-				drawKochSnowflake();
 
+				if (lastPressedDown) {
+					var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
+					var colorLoc = gl.getUniformLocation(program, "uniformColor");
+					if (colorLoc != -1)
+						gl.uniform4fv(colorLoc, color);
+
+					render();
+
+					// When displaying the Sierpinski Gasket, remove the Koch snowflake
+
+					var m_canvas = document.getElementById("c");
+					var m_container = m_canvas.parentNode;
+					if (m_container.firstChild) {
+						var toDelete = document.getElementById("imageTemp");
+						m_container.removeChild(imageTemp);
+					}
+
+					lastPressedDown = false;
+				}
+				
+				else {
+
+					lastPressedDown = true;
+
+					// When displaying the Koch snowflake, hide the Sierpinski Gasket
+					gl.clear( gl.COLOR_BUFFER_BIT );
+					drawKochSnowflake();
+				}
 			}
-		}
 
+
+			/* EXTRA CREDIT #4: Implement a rotation in the vertex shader and rotate the fractal via keyboard 
+								by pressing the 'r' key. Rotation direction is up to you. */
+
+		}
 
 	    render();
 	};
@@ -131,17 +181,24 @@
 	W = 550; 
 	H = 510;
 
+	/* The code to create the fractal via paths was taken from Noam Sutskever:
+
+	   http://www.cs.utoronto.ca/~noam/fractal.html
+
+	*/ 
+
 	function drawKochSnowflake(){
 	   
-	    var main_canvas = document.getElementById("c");
+	   	var main_canvas = document.getElementById("c");
 	    var mcontext = main_canvas.getContext('2d');
 	    var container = main_canvas.parentNode;
+
 	    var canvas = document.createElement('canvas');
 	    canvas.id="imageTemp";
 	    canvas.width=W;
 	    canvas.height=H;
-	    container.appendChild(canvas);;
-	    context = canvas.getContext("2d"); 
+	    container.appendChild(canvas);
+	    context = canvas.getContext('2d'); 
 	    
 	    context.beginPath();
 	    context.stroke();
