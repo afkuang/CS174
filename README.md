@@ -1,5 +1,5 @@
 #CS 174A: Intro to Computer Graphics
-#FALL 2014 | Scott Friedman
+FALL 2014 | Scott Friedman
 
 ###HOMEWORK 1
 
