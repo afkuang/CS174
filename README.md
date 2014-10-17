@@ -16,7 +16,7 @@
 
 #### Extra Credit
 
-	(1) Implement a application based color variable that can be passed through to the fragment shader. [10 pts]
+###	(1) Implement a application based color variable that can be passed through to the fragment shader. [10 pts]
 
 		To do this, I used a uniform variable (uniformColor) and randomly assigned RGB values to the vector before passing it through to the fragment shader.
 
