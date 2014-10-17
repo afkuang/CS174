@@ -6,6 +6,7 @@
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		attribute vec4 vPosition;
 
+		// Use this rotation matrix (which is defined outside) to rotate the fractal.
 		uniform mat4 rotationMatrix;
 
 		void main() {
@@ -27,6 +28,7 @@
 	var canvas;
 	var gl;
 	var context;
+	var totalRotation = 0;
 	var points = [];
 	var NumTimesToSubdivide = 5;
 
@@ -36,6 +38,8 @@
 	    gl = WebGLUtils.setupWebGL(canvas);
 	    context = canvas.getContext("2d");
     
+    	// Initialize the three corners of the gasket 
+
 	    var vertices = [
 	        vec2( -0.5, -0.5 ),
 	        vec2(  0,  0.5 ),
@@ -44,39 +48,52 @@
 
 	    divideTriangle( vertices[0], vertices[1], vertices[2], NumTimesToSubdivide);
 
+	    // Configure WebGL
+
 	    gl.viewport( 0, 0, canvas.width, canvas.height );
     	gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+
+    	// Initialize the shaders (found above)
 
 	    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
 	    gl.useProgram( program );  
 
-	    /*EXTRA CREDIT #1: 	Implement an application based color variable that can be passed through 
+	    /* EXTRA CREDIT #1: Implement an application based color variable that can be passed through 
 	    					to the fragment shader.*/
 
 	    var colorLoc = gl.getUniformLocation(program, "uniformColor");
 	    var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
 	    gl.uniform4fv(colorLoc, color);
 
-	    var matrixLoc = gl.getUniformLocation(program, "rotationMatrix");
-	    var matrix = rotate(0, 1, 0, 0);
-	    gl.uniformMatrix4fv(matrixLoc, false, flatten(matrix));
+	    /* EXTRA CREDIT #4 */ 
+		var matrixLoc = gl.getUniformLocation(program, "rotationMatrix");
+		var matrix = rotate(totalRotation, 0, 0, 1);
+		gl.uniformMatrix4fv(matrixLoc, false, flatten(matrix));
+
+
+		// Load the data into the GPU
 
 	    var bufferId = gl.createBuffer();
 	    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
 	    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+
+	    // Associate our shader variables with our data buffer
+
 	    var vPosition = gl.getAttribLocation( program, "vPosition" );
 	    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
 	    gl.enableVertexAttribArray( vPosition );
 
-	 	/* EXTRA CREDIT 2 ~ 4 */
+	 	/* EXTRA CREDIT PARTSR 2 ~ 4 */
 
-	    window.onkeypress = function(e){
+	    window.onkeydown = function(e){
 			var key = e.keyCode ? e.keyCode : e.which;
 
-		   /*EXTRA CREDIT #2: 	Implement a method where the keyboard is used (up arrow, in this case)
-    					to change that color variable and redisplay.*/
+		    /* EXTRA CREDIT #2: Implement a method where the keyboard is used (UP arrow, in this case)
+    							to change that color variable and redisplay.*/
 
 			if (key == 38) {
+
+				//Focus is on the Sierpinski Gasket
 				if (!lastPressedDown) {
 					var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
 					var colorLoc = gl.getUniformLocation(program, "uniformColor");
@@ -89,7 +106,7 @@
 
 					var m_canvas = document.getElementById("c");
 					var m_container = m_canvas.parentNode;
-					if (m_container.firstChild) {
+					if (!m_container.firstChild) {
 						var toDelete = document.getElementById("imageTemp");
 						m_container.removeChild(imageTemp);
 					}
@@ -97,16 +114,20 @@
 					lastPressedDown = false;
 				}
 
-				else {}
+				//Focus is on the Koch snowflake
+				else {
 					//do nothing
+				}
 			}
 
 			/* EXTRA CREDIT #3: Implement another function in your window similar to the Sierpinski Gasket, 
-								another fractal perhaps? Provide a keyboard input option to switch between the 
-								two on screen, please explain in your notes what function you implemented */
+								another fractal perhaps? Provide a keyboard input option (DOWN) to switch 
+								between the two on screen, please explain in your notes what function you 
+								implemented */
 
-			if (key == 40) {
+			else if (key == 40) {
 
+				//Focus switches to the Sierpinski Gasket
 				if (lastPressedDown) {
 					var color = vec4(Math.random(), Math.random(), Math.random(), 1.0);
 					var colorLoc = gl.getUniformLocation(program, "uniformColor");
@@ -127,6 +148,7 @@
 					lastPressedDown = false;
 				}
 				
+				//Focus switches to the Koch snowflake
 				else {
 
 					lastPressedDown = true;
@@ -141,6 +163,26 @@
 			/* EXTRA CREDIT #4: Implement a rotation in the vertex shader and rotate the fractal via keyboard 
 								by pressing the 'r' key. Rotation direction is up to you. */
 
+			else if (key == 82) {
+
+				//Focus is on the Sierpinski Gasket
+				if (!lastPressedDown) {
+
+					// Every keypress OR while r is held down, the fractal rotates 45 degrees along the z axis.
+					totalRotation += 45;
+					var matrixLoc = gl.getUniformLocation(program, "rotationMatrix");
+					var matrix = rotate(totalRotation, 0, 0, 1);
+					if (matrixLoc != -1)
+						gl.uniformMatrix4fv(matrixLoc, false, flatten(matrix));
+
+					render();
+				}
+
+				//Focus is on the Koch snowflake
+				else{
+					//do nothing
+				}
+			}
 		}
 
 	    render();
@@ -186,7 +228,7 @@
 	W = 550; 
 	H = 510;
 
-	/* The code to create the fractal via paths was taken from Noam Sutskever:
+	/* The following code used to create the fractal via paths was taken from Noam Sutskever:
 
 	   http://www.cs.utoronto.ca/~noam/fractal.html
 
@@ -198,6 +240,7 @@
 	    var mcontext = main_canvas.getContext('2d');
 	    var container = main_canvas.parentNode;
 
+	    // Creates a new canvas to attach (as a child) to the existing canvas
 	    var canvas = document.createElement('canvas');
 	    canvas.id="imageTemp";
 	    canvas.width=W;
@@ -225,10 +268,10 @@
 	    var D = divide(add(multiply(B, 2), A), 3);
 	    var F = divide(add(A, B), 2);
 	    
-	    var V1 = divide(minus(F, A), length(F, A));
+	    var V1 = divide(minus(F, A), lengthF(F, A));
 	    var V2 = [V1[1], -V1[0]];
 
-	    var E = add(multiply(V2, Math.sqrt(3)/6 * length(B, A)), F);
+	    var E = add(multiply(V2, Math.sqrt(3)/6 * lengthF(B, A)), F);
 
 	    DrawLine(A, B, "black");
 
@@ -260,9 +303,8 @@
 	    return [a[0]-b[0], a[1]-b[1]];
 	};
 
-	function length(a, b){
-	    return Math.sqrt(Math.pow(a[0] - b[0],2) + 
-	                     Math.pow(a[1] - b[1],2));
+	function lengthF(a, b){
+	    return Math.sqrt(Math.pow(a[0] - b[0],2) + Math.pow(a[1] - b[1],2));
 	};
 
 	function DrawLine(a, b, c){
@@ -273,6 +315,7 @@
 	    context.stroke();
 	    context.closePath();
 	};
+
 	</script>
 
 	<body>
