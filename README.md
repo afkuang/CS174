@@ -1,9 +1,8 @@
-#CS 174A: Intro to Computer Graphics
-FALL 2014 | Scott Friedman
+# CS 174A: Intro to Computer Graphics
+## HOMEWORK 1
 
-###HOMEWORK 1
+### Andrew Kuang (004042464)
 
-####Andrew Kuang (004042464)
-
-Environment:
+### Environment Information
+#### Editor: Sublime Text
 Browser: Mozilla Firefox
